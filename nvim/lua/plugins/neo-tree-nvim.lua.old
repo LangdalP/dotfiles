@@ -1,0 +1,22 @@
+-- require("lazy").setup({
+--   -- Let lazy.nvim manage itself
+--   "nvim-neo-tree/neo-tree.nvim",
+--   {
+--     opts = {
+--       filesystem = {
+--         bind_to_cwd = true,
+--       },
+--     },
+--   },
+-- })
+
+return {
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    opts = {
+      filesystem = {
+        bind_to_cwd = true,
+      },
+    },
+  },
+}
