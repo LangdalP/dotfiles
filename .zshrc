@@ -1,4 +1,6 @@
 # Direnv: https://direnv.net/
+# Initialized in a cryptic way to avoid output during powerlevek10k init
+# https://github.com/romkatv/powerlevel10k#how-do-i-initialize-direnv-when-using-instant-prompt
 (( ${+commands[direnv]} )) && emulate zsh -c "$(direnv export zsh)"
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
@@ -10,15 +12,16 @@ fi
 
 (( ${+commands[direnv]} )) && emulate zsh -c "$(direnv hook zsh)"
 
-autoload -U add-zsh-hook
-
 # Needs to be here for autojump to work with autojump
 # To use GNU ls on OSX: brew install coreutils
-alias ls='/usr/local/bin/gls --color -h --group-directories-first'
-# Source aliases
-source $HOME/dotfiles/zsh/alias-mac.sh
+alias ls='gls --color -h --group-directories-first'
 
+# Source aliases
+source $HOME/dotfiles/zsh/alias.sh
+
+# Use nvim for commands that use this, like git commit
 export EDITOR=nvim
+
 # This turns on bash completion
 autoload -U +X bashcompinit && bashcompinit
 
@@ -27,80 +30,62 @@ autoload -Uz compinit && compinit
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' special-dirs true
 
-# Needed by alexdesousa/hab plugin
-autoload -Uz compinit && compinit
-
 # Lazyload command
-source ~/dotfiles/zsh/zsh-lazyload/zsh-lazyload.zsh
+# source ~/dotfiles/zsh/zsh-lazyload/zsh-lazyload.zsh
 
 # Fix locale sometimes not being set on Mac OSX
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-
 # Work aliases
-source $HOME/dotfiles/svv/svv.sh
+# source $HOME/dotfiles/svv/svv.sh
 
-# Move these to a separate utils file
-alias new-html="cp $HOME/dotfiles/templates/index.html $PWD/ && cp $HOME/dotfiles/templates/style.css $PWD/"
-alias run-http="npx http-server"
-
-# Install/init zinit
-source $HOME/dotfiles/zsh/zinit.sh
-
-zinit snippet OMZ::plugins/autojump/autojump.plugin.zsh
-zinit light zsh-users/zsh-autosuggestions
+[[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]] && . $(brew --prefix)/etc/profile.d/autojump.sh
+[[ -s $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # Disable adding commands to history if they start with a space
 setopt histignorespace
 setopt HIST_IGNORE_SPACE
 
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/Peder/Tools/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/Peder/Tools/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/Peder/Tools/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/Peder/Tools/google-cloud-sdk/completion.zsh.inc'; fi
-
-# Added by terraform
-# This turns on bash completion system
-# autoload -U +X bashcompinit && bashcompinit
+# Needed for terraform completions
+# TODO: Move out
 complete -o nospace -C /usr/local/bin/terraform terraform
 
-export PATH=$HOME/.dotnet/tools:$PATH
-export PATH="/usr/local/sbin:$PATH"
-
+# Pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 
-
+# Needed for some programs to work with docker via colima (VSCode)
 export DOCKER_HOST="unix://$HOME/.colima/docker.sock"
 
-# Jobbting
-export GITHUB_OWNER=svvsaga
-export GITHUB_TOKEN=$(cat $HOME/Secrets/gh-terraform-pat.txt)
-#
-
-# TODO: Bruk 1password
-export CHAT_GPT_KEY=$(cat $HOME/Secrets/chatgpt_key.txt)
-export OPENAI_API_KEY="${CHAT_GPT_KEY}"
-
 # NVM config
-export NVM_DIR=~/.nvm
-source $(brew --prefix nvm)/nvm.sh
+export NVM_DIR="$HOME/.nvm"
+  [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+  [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 
-# To activate SDKMan and Conda
-source ~/.bash_profile
+# Put homebrew bins on path
+export PATH=/opt/homebrew/bin:$PATH
 
-BREW_PREFIX="/usr/local"
-source "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+# Gives nice colors for parts of zsh commands
+source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-export HOMEBREW_NO_GOOGLE_ANALYTICS=1
-
+# Enable Emacs-style keybinds, such as Ctrl-A for start of line, Ctrl-E for end of line etc.
 set -o emacs
 
+# Gcloud autocompletion
+# TODO: Move out to separate file
+source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
+source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
+
+# Rust
+source "$HOME/.cargo/env"
+
+# End of powerlevel10k config
 source ~/dotfiles/zsh/powerlevel10k/powerlevel10k.zsh-theme
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
