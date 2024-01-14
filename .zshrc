@@ -37,9 +37,6 @@ zstyle ':completion:*' special-dirs true
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-# Work aliases
-# source $HOME/dotfiles/svv/svv.sh
-
 [[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]] && . $(brew --prefix)/etc/profile.d/autojump.sh
 [[ -s $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
