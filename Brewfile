@@ -29,6 +29,7 @@ brew "switchaudio-osx" # For alfred_audio_switcher
 brew "direnv"
 # Note: Must run rustup-init to complete install
 brew "rustup-init"
+brew "fzf"
 
 cask "1password"
 cask "1password-cli"
