@@ -37,7 +37,7 @@ zstyle ':completion:*' special-dirs true
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-[[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]] && . $(brew --prefix)/etc/profile.d/autojump.sh
+# [[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]] && . $(brew --prefix)/etc/profile.d/autojump.sh
 [[ -s $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # Disable adding commands to history if they start with a space
@@ -69,6 +69,12 @@ source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zs
 
 # Enable Emacs-style keybinds, such as Ctrl-A for start of line, Ctrl-E for end of line etc.
 set -o emacs
+
+source $(brew --prefix)/opt/fzf/shell/completion.zsh
+source $(brew --prefix)/opt/fzf/shell/key-bindings.zsh
+
+eval "$(zoxide init zsh)"
+
 
 # Gcloud autocompletion
 # TODO: Move out to separate file
