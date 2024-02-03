@@ -3,7 +3,18 @@
 alias vim="nvim"
 alias vi="nvim"
 
+alias vid="neovide"
+
 alias rgh="rg --hidden --glob '!.git'"
+
+
+function rgv() {
+  fzf --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case ''" \
+    --bind "change:reload:rg --column --line-number --no-heading --color=always --smart-case {q} || true" \
+    --bind 'enter:become(nvim "+normal $(echo {1} | cut -d : -f2)G$(echo {1} | cut -d : -f3)|" $(echo {1} | cut -d : -f1))' \
+    --ansi --disabled \
+    --layout=reverse
+}
 
 function cd() {
 	builtin cd "$@"
