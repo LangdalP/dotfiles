@@ -39,6 +39,7 @@ export LC_ALL="en_US.UTF-8"
 
 # [[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]] && . $(brew --prefix)/etc/profile.d/autojump.sh
 [[ -s $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+bindkey '^j' autosuggest-accept # Ctrl-J to accept autosuggestion
 
 # Disable adding commands to history if they start with a space
 setopt histignorespace
@@ -73,6 +74,8 @@ set -o emacs
 source $(brew --prefix)/opt/fzf/shell/completion.zsh
 source $(brew --prefix)/opt/fzf/shell/key-bindings.zsh
 
+export PATH=$HOME/Projects/Misc/kvcache/target/release/:$PATH
+
 eval "$(zoxide init zsh)"
 
 
@@ -83,6 +86,9 @@ source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
 
 # Rust
 source "$HOME/.cargo/env"
+
+# This should not be necessary, but I have not been able to make 1Password SSH work without it
+export SSH_AUTH_SOCK="/Users/peder/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 
 # End of powerlevel10k config
 source ~/dotfiles/zsh/powerlevel10k/powerlevel10k.zsh-theme

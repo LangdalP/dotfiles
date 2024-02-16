@@ -30,6 +30,10 @@ brew "direnv"
 # Note: Must run rustup-init to complete install
 brew "rustup-init"
 brew "fzf"
+brew "sqlite"
+
+# Temp?
+brew "neovide"
 
 cask "1password"
 cask "1password-cli"

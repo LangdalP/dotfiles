@@ -16,6 +16,14 @@ function rgv() {
     --layout=reverse
 }
 
+function rgvh() {
+  fzf --bind "start:reload:rg --no-ignore --hidden --column --line-number --no-heading --color=always --smart-case ''" \
+    --bind "change:reload:rg --no-ignore --hidden --column --line-number --no-heading --color=always --smart-case {q} || true" \
+    --bind 'enter:become(nvim "+normal $(echo {1} | cut -d : -f2)G$(echo {1} | cut -d : -f3)|" $(echo {1} | cut -d : -f1))' \
+    --ansi --disabled \
+    --layout=reverse
+}
+
 function cd() {
 	builtin cd "$@"
 	ls
