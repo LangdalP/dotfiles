@@ -1,3 +1,6 @@
+# Must be before direnv since it is used in a .envrc file
+export PATH=$HOME/Projects/Misc/kvcache/target/release/:$PATH
+
 # Direnv: https://direnv.net/
 # Initialized in a cryptic way to avoid output during powerlevek10k init
 # https://github.com/romkatv/powerlevel10k#how-do-i-initialize-direnv-when-using-instant-prompt
@@ -10,6 +13,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+
 (( ${+commands[direnv]} )) && emulate zsh -c "$(direnv hook zsh)"
 
 # Needs to be here for autojump to work with autojump
@@ -21,6 +25,10 @@ source $HOME/dotfiles/zsh/alias.sh
 
 # Use nvim for commands that use this, like git commit
 export EDITOR=nvim
+
+if type brew &>/dev/null; then
+  FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
+fi
 
 # This turns on bash completion
 autoload -U +X bashcompinit && bashcompinit
@@ -74,7 +82,6 @@ set -o emacs
 source $(brew --prefix)/opt/fzf/shell/completion.zsh
 source $(brew --prefix)/opt/fzf/shell/key-bindings.zsh
 
-export PATH=$HOME/Projects/Misc/kvcache/target/release/:$PATH
 
 eval "$(zoxide init zsh)"
 
@@ -89,6 +96,19 @@ source "$HOME/.cargo/env"
 
 # This should not be necessary, but I have not been able to make 1Password SSH work without it
 export SSH_AUTH_SOCK="/Users/peder/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+# Go
+export PATH=$HOME/go/bin:$PATH
+
+# bat theme
+export BAT_THEME="Monokai Extended Bright"
+
+# GNU Binutils are nice
+export PATH="/opt/homebrew/opt/binutils/bin:$PATH"
+
+# TODO: Move out to separate file
+export KAGI_API_KEY=$(kvcache try kagi-api-key 'OP_ACCOUNT="my.1password.com" op read "op://Personal/Kagi/apikey"')
+
 
 # End of powerlevel10k config
 source ~/dotfiles/zsh/powerlevel10k/powerlevel10k.zsh-theme
