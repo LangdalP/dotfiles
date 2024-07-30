@@ -106,6 +106,9 @@ export BAT_THEME="Monokai Extended Bright"
 # GNU Binutils are nice
 export PATH="/opt/homebrew/opt/binutils/bin:$PATH"
 
+# TODO: Move into own domstoladm setup file
+export PATH="$HOME/dotfiles-private/domstoladm:$PATH"
+
 # TODO: Move out to separate file
 export KAGI_API_KEY=$(kvcache try kagi-api-key 'OP_ACCOUNT="my.1password.com" op read "op://Personal/Kagi/apikey"')
 
@@ -118,3 +121,6 @@ source ~/dotfiles/zsh/powerlevel10k/powerlevel10k.zsh-theme
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+# For aliases ghce and ghcs
+eval "$(gh copilot alias -- zsh)"

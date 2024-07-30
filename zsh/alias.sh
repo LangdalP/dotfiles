@@ -7,7 +7,6 @@ alias vid="neovide"
 
 alias rgh="rg --hidden --glob '!.git'"
 
-
 function rgv() {
   fzf --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case ''" \
     --bind "change:reload:rg --column --line-number --no-heading --color=always --smart-case {q} || true" \
@@ -62,6 +61,36 @@ alias gclean='git for-each-ref --format "%(refname:short)" refs/heads | grep -v 
 alias gcleanf='git for-each-ref --format "%(refname:short)" refs/heads | grep -v "master\|main" | xargs git branch -D'
 alias lg='lazygit'
 alias ldo='lazydocker'
+
+function git-contributors() {
+  git shortlog --summary --numbered --email | awk '{$1=""}1'
+}
+
+function git-exclude() {
+
+  # Find git root folder
+  git_root=$(git rev-parse --show-toplevel)
+
+  # Create exclude file if not exists
+  if [ ! -f $git_root/.git/info/exclude ]; then
+      touch $git_root/.git/info/exclude
+  fi
+
+  # Check if file exists
+  if [ -f $1 ]; then
+    # Check if file is already excluded
+    if ! grep -q $1 $git_root/.git/info/exclude; then
+      # Add file to exclude file
+      echo $1 >> $git_root/.git/info/exclude
+      echo "File $1 has been excluded"
+    else
+      echo "File $1 is already excluded"
+    fi
+  else
+    echo "File $1 does not exist"
+  fi
+}
+
 
 alias cfg-src="source ~/.zshrc"
 alias cfg-edit="nvim ~/.zshrc"

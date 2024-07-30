@@ -1,0 +1,25 @@
+[init]
+  defaultBranch = main
+
+[core]
+  excludesfile = ~/dotfiles/.gitignore_global
+
+[credential]
+  helper = osxkeychain
+
+[user]
+	email = peder.github@langd.al
+	name = Peder Voldnes Langdal
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP6ofgRKZN1/PXfb0v/BNyS62OEI3uE8Pi4orf1XiKOp
+
+[includeIf "gitdir:~/Projects/SVV/**"]
+    path = ~/dotfiles/svv/svv.gitconfig
+
+[gpg]
+  format = ssh
+
+[gpg "ssh"]
+  program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+
+[commit]
+  gpgsign = true

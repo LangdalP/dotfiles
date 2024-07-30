@@ -16,13 +16,17 @@ end
 
 local wk = require("which-key")
 
-wk.register({
-  p = {
-    name = "peder",
-  },
-}, {
-  prefix = "<leader>",
+wk.add({
+  { "<leader>p", group = "peder" },
 })
+
+-- wk.register({
+--   p = {
+--     name = "peder",
+--   },
+-- }, {
+--   prefix = "<leader>",
+-- })
 
 map("n", "<leader>pl", ":set invrelativenumber<CR>")
 map("n", "<leader>pw", ":set wrap! linebreak!<CR>")
@@ -30,6 +34,9 @@ map("n", "<leader>pw", ":set wrap! linebreak!<CR>")
 map("n", "<leader>pn", ':Telescope live_grep search_dirs={"~/Notes"}<CR>')
 
 map("n", "<leader>pr", ":Telescope resume<CR>")
+
+map("n", "<leader>pt2", ":set tabstop=2 shiftwidth=2 expandtab<CR>")
+map("n", "<leader>pt4", ":set tabstop=4 shiftwidth=4 expandtab<CR>")
 
 map("n", "<c-p>", "<Plug>(YankyCycleForward)")
 map("n", "<c-n>", "<Plug>(YankyCycleBackward)")
