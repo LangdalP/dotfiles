@@ -5,7 +5,7 @@ alias vi="nvim"
 
 alias vid="neovide"
 
-alias rgh="rg --hidden --glob '!.git'"
+alias rgh="rg --hidden --no-ignore-vcs --glob '!.git'"
 
 function rgv() {
   fzf --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case ''" \

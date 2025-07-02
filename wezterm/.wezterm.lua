@@ -68,15 +68,134 @@ wezterm.on('trigger-vim-with-scrollback', function(window, pane)
   os.remove(name)
 end)
 
+---- SCROLLBACK STUFF END ----
+---- CLICKABLE THINGS START ----
+
+local function should_open_in_idea(filename)
+  local extension = filename:match("^.+%.(%w+)$")
+  if extension then
+    local editable_extensions = { kt = true, kts = true }
+    return editable_extensions[extension] or false
+  end
+  return false
+end
+
+-- Attempts to extract a file path, perhaps with suffix ':lineNo:columnNo', from a file:// URI
+local function extract_filepath_ish(uri)
+  -- `file://hostname/path/to/file`
+  local start, match_end = uri:find("file:");
+  if start == 1 then
+    -- skip "file://", -> `hostname/path/to/file`
+    local host_and_path = uri:sub(match_end + 3)
+    local start, match_end = host_and_path:find("/")
+    if start then
+      -- -> `/path/to/file`
+      --
+      -- TODO: encode spaces as '%20'
+      return host_and_path:sub(match_end)
+    end
+  end
+
+  return nil
+end
+
+-- E.g. `file:///Users/peder/Projects/idea-plugins/wezterm/src/main/kotlin/com/github/pederg/wezterm/wezterm.kt:10:20`
+-- should become three parts:
+-- - filename
+-- - line number
+-- - column number
+local function extract_filepath_and_colon_parts(uri)
+  local filename, line_number, column_number = uri:match("([^:]+):(%d+):(%d+)")
+
+  -- Check if all variables are non-nil
+  if filename and line_number and column_number then
+    return filename, tonumber(line_number), tonumber(column_number)
+  end
+
+  return filename, nil, nil
+end
+
+wezterm.on("open-uri", function(window, pane, uri)
+  wezterm.log_info(string.format("open-uri event: %s", uri))
+  local path_like = extract_filepath_ish(uri)
+  local filepath, line_number, column_number = extract_filepath_and_colon_parts(path_like)
+
+  if filepath and should_open_in_idea(filepath) then
+    local ideaLink = string.format("idea://open?file=%s", filepath)
+
+    if line_number and column_number then
+      ideaLink = string.format("%s&line=%d&column=%d", ideaLink, line_number, column_number)
+    end
+
+    wezterm.log_info(string.format("Opening in IDEA: %s", ideaLink))
+    os.execute(string.format("open '%s'", ideaLink))
+
+    -- Prevent default behavior of opening the URI in the browser
+    return false
+  end
+end)
+
+---- CLICKABLE THINGS END ----
+
+local create_tab_after_current = {
+
+  key = 't',
+  mods = 'CMD',
+  action = wezterm.action_callback(function(window, pane)
+    local mux_window = window:mux_window()
+
+    -- determine the index of the current tab
+    -- https://wezfurlong.org/wezterm/config/lua/mux-window/tabs_with_info.html
+    local tabs = mux_window:tabs_with_info()
+    local current_index = 0
+    for _, tab_info in ipairs(tabs) do
+      if tab_info.is_active then
+        current_index = tab_info.index
+        break
+      end
+    end
+
+    -- spawn a new tab; it will be made active
+    -- https://wezfurlong.org/wezterm/config/lua/mux-window/spawn_tab.html
+    mux_window:spawn_tab {}
+
+    -- Move the new active tab to the right of the previously active tab
+    window:perform_action(act.MoveTab(current_index + 1), pane)
+  end)
+}
+
 config.keys = {
   {
     key = 'H',
     mods = 'CTRL',
     action = act.EmitEvent 'trigger-vim-with-scrollback',
   },
+  -- Rebind OPT-Left, OPT-Right as ALT-b, ALT-f respectively to match Terminal.app behavior
+  {
+    key = 'LeftArrow',
+    mods = 'OPT',
+    action = act.SendKey {
+      key = 'b',
+      mods = 'ALT',
+    },
+  },
+  {
+    key = 'RightArrow',
+    mods = 'OPT',
+    action = act.SendKey { key = 'f', mods = 'ALT' },
+  },
+  {
+    key = 'H',
+    mods = 'CTRL',
+    action = act.ActivateTabRelative(-1)
+  },
+  {
+    key = 'L',
+    mods = 'CTRL',
+    action = act.ActivateTabRelative(1)
+  },
+  create_tab_after_current
 }
 
----- SCROLLBACK STUFF END ----
 
--- and finally, return the configuration to wezterm
 return config

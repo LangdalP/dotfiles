@@ -1,6 +1,40 @@
 -- bootstrap lazy.nvim, LazyVim and your plugins
 require("config.lazy")
 
+require("codecompanion").setup({
+  strategies = {
+    chat = {
+      adapter = "ollama",
+    },
+    inline = {
+      adapter = "ollama",
+    },
+    cmd = {
+      adapter = "ollama",
+    }
+  },
+  adapters = {
+    ollama = function()
+      return require("codecompanion.adapters").extend("ollama", {
+        env = {
+          url = "http://127.0.0.1:11434"
+        },
+        headers = {
+          ["Content-Type"] = "application/json",
+        },
+        parameters = {
+          sync = true,
+        },
+        schema = {
+          model = {
+            default = "gemma3:latest",
+          },
+        },
+      })
+    end,
+  },
+})
+
 require("conform").formatters["sql-formatter"] = {
   command = "sql-formatter",
   stdin = true,
@@ -20,26 +54,26 @@ opt.foldmethod = "expr"
 opt.foldexpr = "nvim_treesitter#foldexpr()"
 
 -- TODO: Test that this works. Does telescope currently use rg?
-require("telescope").setup({
-  pickers = {
-    find_files = {
-      find_command = { "rg", "--files", "--iglob", "!.git", "--hidden" },
-    },
-    grep_string = {
-      additional_args = { "--hidden" },
-    },
-    live_grep = {
-      additional_args = { "--hidden" },
-    },
-  },
-})
+-- require("telescope").setup({
+--   pickers = {
+--     find_files = {
+--       find_command = { "rg", "--files", "--iglob", "!.git", "--hidden" },
+--     },
+--     grep_string = {
+--       additional_args = { "--hidden" },
+--     },
+--     live_grep = {
+--       additional_args = { "--hidden" },
+--     },
+--   },
+-- })
 
 -- Custom command for live grep in current directory
-vim.api.nvim_create_user_command(
-  "PLiveGrepHere",
-  ":lua require('telescope.builtin').live_grep({search_dirs={require('oil').get_current_dir()}})",
-  {}
-)
+-- vim.api.nvim_create_user_command(
+--   "PLiveGrepHere",
+--   ":lua require('telescope.builtin').live_grep({search_dirs={require('oil').get_current_dir()}})",
+--   {}
+-- )
 
 -- Allow clipboard copy paste in neovim - needed when using neovide
 vim.g.neovide_input_use_logo = 1

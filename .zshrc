@@ -23,6 +23,8 @@ alias ls='gls --color -h --group-directories-first'
 # Source aliases
 source $HOME/dotfiles/zsh/alias.sh
 
+source $HOME/dotfiles/zsh/git-authors.sh
+
 # Use nvim for commands that use this, like git commit
 export EDITOR=nvim
 
@@ -62,8 +64,14 @@ export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 
+# Needed for TestContainers for Java: https://github.com/testcontainers/testcontainers-java/issues/5034#issuecomment-2078899818
+# export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE="/var/run/docker.sock"
+# Needed for PostgreSQL JDBC driver to work with TestContainers? https://github.com/testcontainers/testcontainers-java/issues/7875
+# export TESTCONTAINERS_HOST_OVERRIDE=$(colima ls -j | jq -r '.address')
 # Needed for some programs to work with docker via colima (VSCode)
-export DOCKER_HOST="unix://$HOME/.colima/docker.sock"
+# export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
+
+alias col-start="colima start --memory 8 --network-address"
 
 # NVM config
 export NVM_DIR="$HOME/.nvm"
@@ -88,8 +96,8 @@ eval "$(zoxide init zsh)"
 
 # Gcloud autocompletion
 # TODO: Move out to separate file
-source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
-source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
+# source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
+# source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
 
 # Rust
 source "$HOME/.cargo/env"
@@ -103,14 +111,28 @@ export PATH=$HOME/go/bin:$PATH
 # bat theme
 export BAT_THEME="Monokai Extended Bright"
 
-# GNU Binutils are nice
-export PATH="/opt/homebrew/opt/binutils/bin:$PATH"
-
 # TODO: Move into own domstoladm setup file
 export PATH="$HOME/dotfiles-private/domstoladm:$PATH"
 
+export PATH="$HOME/Projects/Misc/ijhttp:$PATH"
+
+function wtf() {
+  COMMAND=$(fc -ln -1)
+  $HOME/Projects/Hobby/uhm/wtf "$COMMAND"
+}
+
 # TODO: Move out to separate file
 export KAGI_API_KEY=$(kvcache try kagi-api-key 'OP_ACCOUNT="my.1password.com" op read "op://Personal/Kagi/apikey"')
+
+# ATAC keybinds
+export ATAC_KEY_BINDINGS=$HOME/dotfiles/zsh/atac_vim_key_bindings.toml
+
+# Add this to your .bashrc, .zshrc or equivalent.
+# Run 'fff' with 'f' or whatever you decide to name the function.
+f() {
+    fff "$@"
+    cd "$(cat "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d")"
+}
 
 
 # End of powerlevel10k config
@@ -124,3 +146,4 @@ export SDKMAN_DIR="$HOME/.sdkman"
 
 # For aliases ghce and ghcs
 eval "$(gh copilot alias -- zsh)"
+. "/Users/peder/.deno/env"
