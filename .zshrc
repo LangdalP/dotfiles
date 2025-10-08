@@ -25,6 +25,11 @@ source $HOME/dotfiles/zsh/alias.sh
 
 source $HOME/dotfiles/zsh/git-authors.sh
 
+
+# Setup wezterm integration (for separating different semantic zones in terminal output)
+# Does not work correctly with command input, not sure why. Suspect it is something with powerlevel10k.
+. $HOME/dotfiles/wezterm/wezterm-zsh-integration.sh
+
 # Use nvim for commands that use this, like git commit
 export EDITOR=nvim
 
@@ -71,7 +76,7 @@ eval "$(pyenv init -)"
 # Needed for some programs to work with docker via colima (VSCode)
 # export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
 
-alias col-start="colima start --memory 8 --network-address"
+# alias col-start="colima start --memory 8 --network-address"
 
 # NVM config
 export NVM_DIR="$HOME/.nvm"
@@ -125,7 +130,7 @@ function wtf() {
 export KAGI_API_KEY=$(kvcache try kagi-api-key 'OP_ACCOUNT="my.1password.com" op read "op://Personal/Kagi/apikey"')
 
 # ATAC keybinds
-export ATAC_KEY_BINDINGS=$HOME/dotfiles/zsh/atac_vim_key_bindings.toml
+# export ATAC_KEY_BINDINGS=$HOME/dotfiles/zsh/atac_vim_key_bindings.toml
 
 # Add this to your .bashrc, .zshrc or equivalent.
 # Run 'fff' with 'f' or whatever you decide to name the function.
@@ -139,6 +144,7 @@ f() {
 source ~/dotfiles/zsh/powerlevel10k/powerlevel10k.zsh-theme
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"

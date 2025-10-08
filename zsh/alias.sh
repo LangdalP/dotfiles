@@ -5,7 +5,25 @@ alias vi="nvim"
 
 alias vid="neovide"
 
+alias lsh="ls -alh"
 alias rgh="rg --hidden --no-ignore-vcs --glob '!.git'"
+
+function b64url_encode() {
+  # Base64url is just base64  with + and / replaced by - and _ and no padding
+  echo "$1" | base64 | tr '+/' '-_' | tr -d '='
+}
+
+function b64url_decode() {
+    local input="$1"
+    # Convert URL-safe characters back
+    input=$(echo "$input" | tr -- '-_' '+/')
+    # Add padding
+    case $((${#input} % 4)) in
+        2) input="${input}==" ;;
+        3) input="${input}=" ;;
+    esac
+    echo "$input" | base64 -d
+}
 
 function rgv() {
   fzf --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case ''" \

@@ -32,6 +32,9 @@ brew "rustup-init"
 brew "fzf"
 brew "sqlite"
 
+brew "fish"
+brew "fisher"
+
 # Temp?
 brew "neovide"
 

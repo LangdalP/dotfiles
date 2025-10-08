@@ -7,6 +7,117 @@ local act = wezterm.action
 -- This will hold the configuration.
 local config = wezterm.config_builder()
 
+-- It seems that the end_y is off by one, or it is exlusive, which means it does not work with get_text_from_semantic_zone
+local function fix_semantic_zone_output(zone)
+  local fixed_zone = {
+    start_x = 0,
+    start_y = zone.start_y,
+    end_x = 0,
+    end_y = zone.end_y + 1,
+    semantic_type = zone.semantic_type
+  }
+  return fixed_zone
+end
+
+-- It seems when using multiline commands, there are multiple prompt zones for a single command
+-- We need to first look at second last prompt zone, then the one before that, etc, until one zones end_y does not touch the next zones start_y
+local function merge_prompt_zones(prompt_zones)
+  if #prompt_zones < 2 then
+    -- return only zone
+    return prompt_zones[#prompt_zones]
+  end
+
+  local start_idx = #prompt_zones - 1
+  local end_of_prompt_zone = prompt_zones[start_idx]
+  local current_prompt_zone = {
+    start_x = 0,
+    start_y = end_of_prompt_zone.start_y,
+    end_x = 0,
+    end_y = end_of_prompt_zone.end_y + 1,
+    semantic_type = end_of_prompt_zone.semantic_type
+  }
+
+  for i = start_idx, 0, -1 do
+    local next_zone = prompt_zones[i - 1]
+
+    if current_prompt_zone.start_y == next_zone.end_y + 1 then
+      -- There is no gap, so we merge
+      current_prompt_zone.start_y = next_zone.start_y
+    else
+      -- Gap exists, so we stop merging
+      break
+    end
+  end
+
+  return current_prompt_zone
+end
+
+-- Strategy: Find second last prompt, find last output zone, and get text between them
+local function get_last_user_input2(window, pane)
+  local prompt_zones = pane:get_semantic_zones("Prompt")
+
+  if #prompt_zones > 1 then
+    -- Merge prompt zones
+    local merged = merge_prompt_zones(prompt_zones)
+
+    local text = pane:get_text_from_semantic_zone(merged)
+    print(text)
+    return text
+  else
+    return ""
+  end
+end
+
+local function get_last_user_output(window, pane)
+  local output_zones = pane:get_semantic_zones("Output")
+
+  -- Get last element if list is non-empty
+  if #output_zones > 0 then
+    local last_zone = output_zones[#output_zones]
+    local zone_fixed = fix_semantic_zone_output(last_zone)
+
+    local text = pane:get_text_from_semantic_zone(zone_fixed)
+    return text
+  else
+    return ""
+  end
+end
+
+local function get_last_input_and_output(window, pane)
+  local input_text = get_last_user_input2(window, pane)
+  local output_text = get_last_user_output(window, pane)
+
+  print("Last input:")
+  print(input_text)
+  print("Last output:")
+  print(output_text)
+
+  -- local command = 'claude -p "This command did not work. Why?\n\n' .. input_text .. '\n' .. output_text .. '"'
+  -- local command = '/Users/peder/.local/share/nvm/v22.20.0/bin/claude -p "What is 2 + 2?"'
+  -- local command = "whoami"
+  -- local command = "fish -l -c \"npm --version\""
+  -- local command = 'fish -c "source ~/.config/fish/config.fish && npm --version"'
+  -- local command = "/Users/peder/.local/share/nvm/v22.20.0/bin/npm --version"
+
+  -- print("Executing command: " .. command)
+
+  -- local return_code, a, b = os.execute(command .. " > ~/peder-log.txt")
+  -- print("Return code from command: " .. tostring(return_code))
+  -- print(a)
+  -- print(b)
+
+  local handle = io.popen("/Users/peder/.local/share/nvm/v22.20.0/bin/npm --version 2>&1")
+  local result = handle:read("*a")
+  local success = handle:close()
+  print("Output:", result)
+  print("Success:", success)
+end
+
+wezterm.on('debug', function(window, pane)
+  print("SEPARATOR xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+  get_last_input_and_output(window, pane)
+end)
+
 -- This is where you actually apply your config choices
 
 config.font_size = 13.0
@@ -96,6 +207,15 @@ local function extract_filepath_ish(uri)
     end
   end
 
+  start, match_end = uri:find("diff:")
+  if start == 1 then
+    -- `diff:/path/to/file.kt`
+    local path = uri:sub(match_end + 1)
+    -- Add /Users/peder/Projects/Domstoladm/lovisa_core/ to start of path
+    path = "/Users/peder/Projects/Domstoladm/lovisa_core/" .. path
+    return path
+  end
+
   return nil
 end
 
@@ -117,6 +237,12 @@ end
 
 wezterm.on("open-uri", function(window, pane, uri)
   wezterm.log_info(string.format("open-uri event: %s", uri))
+
+  -- Check if uri contains http or https. If so, return true.
+  if uri:match("^https?://") then
+    return true
+  end
+
   local path_like = extract_filepath_ish(uri)
   local filepath, line_number, column_number = extract_filepath_and_colon_parts(path_like)
 
@@ -135,7 +261,29 @@ wezterm.on("open-uri", function(window, pane, uri)
   end
 end)
 
+config.hyperlink_rules = {
+
+  -- URL with a protocol
+  {
+    regex = "\\bhttps?://(localhost|[\\w\\-\\.]+)(:\\d+)?(/[^\\s]*)?\\b",
+    format = "$0",
+  },
+
+  -- file:// URIs
+  {
+    regex = "\\bfile://\\S*\\b",
+    format = "$0"
+  },
+
+  -- absolute file paths without protocol, starting with /Users/ and ending with line and column numbers
+  {
+    regex = "/Users/[\\S ]+\\.kt:\\d+:\\d+",
+    format = "file://$0"
+  },
+}
+
 ---- CLICKABLE THINGS END ----
+---- TAB CREATION START ----
 
 local create_tab_after_current = {
 
@@ -164,11 +312,55 @@ local create_tab_after_current = {
   end)
 }
 
+---- TAB CREATION END ----
+---- RESIZE MODE START ----
+local resizeMode = false
+
+wezterm.on('toggle-resize-mode', function(window, pane)
+  print('Toggling resize mode')
+  resizeMode = not resizeMode
+  print('Resize mode is now ' .. tostring(resizeMode))
+end)
+-- Retrieve the text from the pane
+---- RESIZE MODE END ----
+
+
+config.leader = { key = 'l', mods = 'CMD', timeout_milliseconds = 3000 }
 config.keys = {
   {
-    key = 'H',
-    mods = 'CTRL',
+    key = '/',
+    mods = 'LEADER',
+    action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' },
+  },
+  {
+    key = 'o',
+    mods = 'LEADER',
+    action = wezterm.action.ShowDebugOverlay,
+  },
+  {
+    key = 'd',
+    mods = 'LEADER',
+    action = act.EmitEvent 'debug',
+  },
+  {
+    key = '-',
+    mods = 'LEADER',
+    action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
+  },
+  {
+    key = 'h',
+    mods = 'LEADER',
     action = act.EmitEvent 'trigger-vim-with-scrollback',
+  },
+  {
+    key = 'RightArrow',
+    mods = 'LEADER',
+    action = act.AdjustPaneSize { 'Right', 20 },
+  },
+  {
+    key = 'LeftArrow',
+    mods = 'LEADER',
+    action = act.AdjustPaneSize { 'Left', 20 },
   },
   -- Rebind OPT-Left, OPT-Right as ALT-b, ALT-f respectively to match Terminal.app behavior
   {
@@ -185,13 +377,13 @@ config.keys = {
     action = act.SendKey { key = 'f', mods = 'ALT' },
   },
   {
-    key = 'H',
-    mods = 'CTRL',
+    key = 'j',
+    mods = 'CTRL|CMD',
     action = act.ActivateTabRelative(-1)
   },
   {
-    key = 'L',
-    mods = 'CTRL',
+    key = 'k',
+    mods = 'CTRL|CMD',
     action = act.ActivateTabRelative(1)
   },
   create_tab_after_current
