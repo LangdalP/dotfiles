@@ -16,6 +16,4 @@ fzf --fish | source
 alias vim="nvim"
 alias vi="nvim"
 alias lg="lazygit"
-alias lsx="gls --color -h --group-directories-first"
-alias lsh="ls -alh"
 alias rgh="rg --hidden --no-ignore-vcs --glob '!.git'"
