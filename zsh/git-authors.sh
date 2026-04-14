@@ -12,7 +12,9 @@ git-add-coauthor() {
     local selected_author=$(echo "$authors" | fzf --prompt="Select co-author: ")
 
     if [[ -n "$selected_author" ]]; then
-        git commit --amend --no-verify --no-edit --trailer "Co-authored-by: $selected_author"
+        local msg=$(git log -1 --pretty=format:%B)
+        local new_message="$msg"$'\n\n'"Co-authored-by: $selected_author"
+        git commit --amend --no-verify -m "$new_message"
         echo "Added co-author: $selected_author"
     else
         echo "No author selected"

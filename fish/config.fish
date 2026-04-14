@@ -17,3 +17,7 @@ alias vim="nvim"
 alias vi="nvim"
 alias lg="lazygit"
 alias rgh="rg --hidden --no-ignore-vcs --glob '!.git'"
+
+# Added by OrbStack: command-line tools and integration
+# This won't be added again if you remove it.
+source ~/.orbstack/shell/init2.fish 2>/dev/null || :

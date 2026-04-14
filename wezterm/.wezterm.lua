@@ -7,6 +7,9 @@ local act = wezterm.action
 -- This will hold the configuration.
 local config = wezterm.config_builder()
 
+-- cmdpicker (like whichkey for wezterm)
+local cmdpicker = wezterm.plugin.require('https://github.com/abidibo/wezterm-cmdpicker')
+
 -- It seems that the end_y is off by one, or it is exlusive, which means it does not work with get_text_from_semantic_zone
 local function fix_semantic_zone_output(zone)
   local fixed_zone = {
@@ -113,9 +116,26 @@ local function get_last_input_and_output(window, pane)
   print("Success:", success)
 end
 
+local function get_current_user_input(window, pane)
+  local input_zones = pane:get_semantic_zones("Prompt")
+  print("Num input zones")
+  print(#input_zones)
+
+  local last_zone = input_zones[#input_zones]
+  print("Last input zone:")
+  print(last_zone)
+
+  local text = pane:get_text_from_semantic_zone(fix_semantic_zone_output(last_zone))
+  print("Current input:")
+  print(text)
+end
+
+-- Strategi: Skriv innhald til tmp-filer
+-- Deretter send kommando for å køyre f.eks. claude eller liknande med innhaldet i filene som input
 wezterm.on('debug', function(window, pane)
   print("SEPARATOR xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-  get_last_input_and_output(window, pane)
+  -- get_last_input_and_output(window, pane)
+  get_current_user_input(window, pane)
 end)
 
 -- This is where you actually apply your config choices
@@ -133,7 +153,8 @@ config.window_frame = {
 }
 
 -- Needed for sane support for option key (like writing the pipe symbol or curly braces)
-config.send_composed_key_when_left_alt_is_pressed = true
+config.send_composed_key_when_left_alt_is_pressed = false
+config.send_composed_key_when_right_alt_is_pressed = true
 
 config.scrollback_lines = 20000
 
@@ -388,6 +409,11 @@ config.keys = {
   },
   create_tab_after_current
 }
+
+-- Apply the picker (must be called LAST)
+cmdpicker.apply_to_config(config, {
+  title = 'Command Palette',
+})
 
 
 return config
